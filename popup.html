@@ -26,14 +26,17 @@
             background-color: #ffffff;
             border: 1px solid #ddd;
             transition: all 0.3s ease;
+            width: 50%;
+            transition: 0.5s;
         }
 
         .tool-btn.active {
             background-color: #4CAF50;
             color: white;
             border-color: #4CAF50;
-            position: relative;
-            right: -80%;
+            
+            transform: translateX(100%);
+            
         }
 
         .highlight-item {
@@ -136,6 +139,6 @@
     <div id="status" class="status-text">Highlighter is inactive</div>
     <div id="highlights-list"></div>
     <button id="clearAll" class="clear-all-btn">Clear All Highlights</button>
-    <script src="popup.js"></script>
+    <script src="popup.js" type="module"></script>
 </body>
 </html>

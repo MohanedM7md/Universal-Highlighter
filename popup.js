@@ -1,26 +1,37 @@
-document.addEventListener('DOMContentLoaded', function() {
+import {getActiveTab} from "./utils.js"
+
+document.addEventListener('DOMContentLoaded', ()=> {
+
     const highlightsList = document.getElementById('highlights-list');
     const clearAllButton = document.getElementById('clearAll');
     const highlighterTool = document.getElementById('highlighterTool');
     const statusText = document.getElementById('status');
 
     
-   
+   //Checks if the Active button is already pressed
     chrome.storage.local.get(["highlighterActive"]).then((result) => {
         statusText.textContent =result['highlighterActive'] ?'Highlighter is active':'Highlighter is Inactive';
        if(result['highlighterActive'])
         highlighterTool.classList.add('active');
       });
 
+
+    //Toggling the clicking on Active button
     highlighterTool.addEventListener('click', ()=> {
-        console.log("Hello World1");
+        
         const ToggleResult = highlighterTool.classList.toggle('active');
         statusText.textContent =ToggleResult ?'Highlighter is active':'Highlighter is Inactive';
         
         chrome.storage.local.set({ "highlighterActive": ToggleResult });
 
-        
-
+        getActiveTab((tab) => {
+            if (tab) {
+            chrome.tabs.sendMessage(tab.id, {
+                action: 'toggleHighlighter',
+                state: ToggleResult
+            });
+            }
+        });
     })
     
 
@@ -53,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function refreshHighlights() {
-        chrome.storage.sync.get({ highlights: [] }, function(data) {
+        chrome.storage.sync.get({ highlights: [] }, (data) => {
             const highlights = data.highlights;
             highlightsList.innerHTML = '';
 
@@ -64,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             highlights.sort((a, b) => b.timestamp - a.timestamp);
 
-            highlights.forEach(function(highlight, index) {
+            highlights.forEach((highlight, index) => {
                 const div = document.createElement('div');
                 div.className = 'highlight-item';
                 div.innerHTML = `
@@ -85,6 +96,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
     }
+
+
 
     function deleteHighlight(index) {
         chrome.storage.sync.get({ highlights: [] }, function(data) {

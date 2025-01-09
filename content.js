@@ -4,22 +4,23 @@ let isHighlighterActive = false;
 
     console.log("contnet load");
 // Check initial state
-chrome.storage.local.get('highlighterActive', function(data) {
-    isHighlighterActive = data.highlighterActive || false;
+chrome.storage.local.get(["highlighterActive"], (result) => {
+    isHighlighterActive = result.highlighterActive;
 });
 
 // Listen for messages from popup
-chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
-    if (request.action === 'toggleHighlighter') {
-        isHighlighterActive = request.state;
+chrome.runtime.onMessage.addListener((message) => {
+    if (message.action === 'toggleHighlighter') {
+        isHighlighterActive = message.state;
     }
-    else if (request.action === 'removeHighlight') {
-        const highlightElement = document.querySelector(`[data-highlight-id="${request.highlightId}"]`);
+
+    else if (message.action === 'removeHighlight') {
+        const highlightElement = document.querySelector(`[data-highlight-id="${message.highlightId}"]`);
         if (highlightElement) {
             removeHighlight(highlightElement);
         }
     }
-    else if (request.action === 'removeAllHighlights') {
+    else if (message.action === 'removeAllHighlights') {
         const highlights = document.querySelectorAll('.highlighted-text');
         highlights.forEach(highlight => removeHighlight(highlight));
     }
@@ -27,7 +28,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
 
 
 
-//Handle Alt key si pressed
+//Handle Control key si pressed
 function Keytogller(e){
     if (e.type == 'keyup')
         return 'keydown';
@@ -36,10 +37,10 @@ function Keytogller(e){
 }
 //Control Pressed Handling
 function HandleCtrlDown(event) {
-  if (event.key === 'Alt') {
+  if (event.key === 'Control') {
       isShiftPressed = !isShiftPressed;
       event.preventDefault(); // Prevents default behavior
-    console.log(`key ${event.type} ${event.key} and shift is ${isShiftPressed}`);
+    console.log(`key ${event.type} ${event.key} and Control is ${isShiftPressed}`);
     
     // Re-enable the listener when the key is released
 }
@@ -101,6 +102,7 @@ function saveHighlight(highlightData) {
     chrome.storage.sync.get({ highlights: [] }, function(data) {
         const highlights = data.highlights;
         highlights.push(highlightData);
+        console.log("highlits already mwogoda:", highlights)
         chrome.storage.sync.set({ highlights: highlights }, function() {
             console.log('Highlight saved:', highlightData);
         });
